@@ -14,4 +14,4 @@ todoController(app)
 
 
 app.listen(process.env.PORT || 3000)
-console.log('Server running on http://localhost:3000/todo')
+console.log('\x1b[32m%s\x1b[0m', 'Server running on http://localhost:3000/todo')

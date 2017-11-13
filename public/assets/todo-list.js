@@ -10,9 +10,8 @@ $(document).ready(function(){
         type: 'POST',
         url: '/todo',
         data: todo,
-        success: function(data){ 
-          const todos = data.map(todo => `<li>${todo.item}</li>`)
-          $("#todo-table ul").html(todos)
+        success: function(todo){ 
+          $("#todo-table ul").append(`<li>${todo.item}</li>`)
         }
       })
 
@@ -26,12 +25,19 @@ $(document).ready(function(){
       
       $.ajax({
         type: 'DELETE',
-        url: '/todo/' + item,     // url like  '/todo/get-some-milk' 
-        success: function(data){
-          const todos = data.map(todo => `<li>${todo.item}</li>`)
-          $("#todo-table ul").html(todos)
+        url: '/todo/' + item,     // url like - '/todo/get-some-milk' 
+        success: function(todo){
+          let todos = []
+          $("#todo-table ul li").each(function(){
+            const todoVal = $(this).text()
+            if ( todoVal != todo.item )
+               todos.push(todoVal)
+          })
+
+          $("#todo-table ul").html(todos.map(todo => `<li>${todo}</li>`))
         }
       })
+
   })
 
 })
