@@ -19,7 +19,7 @@ app.use(bodyParser.json())
 
 
 // connect to database
-mongoose.connect('mongodb://test1:test1@ds163705.mlab.com:63705/test11')
+mongoose.connect('mongodb://test11:test11@ds259855.mlab.com:59855/express-todo-mvc-with-users')
 mongoose.connection
     .once('open', () => console.log('\x1b[32m%s\x1b[0m', 'mongodb connected'))
     .on('error', err => console.error(err))
