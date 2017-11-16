@@ -1,46 +1,68 @@
 
-const urlencodedParser = require('body-parser').urlencoded({extended: false})
 const mongoose = require('mongoose')
-const Todo = require('../models/todo')  // Todo model
-
-
-mongoose.Promise = global.Promise
-
-// Connect to the database ( hosted on mlab )
-mongoose.connect('mongodb://test:test@ds159845.mlab.com:59845/express-todo-mvc-with-database')
-mongoose.connection
-    .once('open', () => console.log('\x1b[32m%s\x1b[0m', 'mongodb connected'))
-    .on('error', err => console.error(err))
-
+const router = require('express').Router()
+const User = require('../models/User')
 
 
 module.exports = function(app){
 
+    app.use('/user/:userId/todos', router)
+    
+    router.get('/', (req, res) => {
+        if(!req.cookies.userId){
+            res.redirect('/')
+            return 
+        }
 
-    app.get('/todo', (req, res) => {
-        // get data from mongodb collection(todos) and render view(todo.ejs)
-        Todo.find({}, (err, data) => {
+        User.find({
+            userId: req.cookies.userId
+        }, (err, data) => {
             if (err) throw err
-            res.render('todo', {todos: data})
+            res.render('todo', {todos: data[0].todos})
         })
     })
 
-    app.post('/todo', urlencodedParser, (req, res) => {
-        //get data from the view and add it to the database collection(todos)
-        new Todo({item: req.body.item}).save((err,data) => {
+    router.post('/', (req, res) => {
+        if(!req.cookies.userId){
+            res.redirect('/')
+            return 
+        }
+        
+        User.find({
+            userId: req.cookies.userId
+        }, (err, data) => {
             if (err)  throw err
-            res.json(data)  // data is here the new Todo created
+            data[0].todos.push({item: req.body.item})
+            data[0].save((err ,data) => {
+                if (err)  throw err
+                res.json({item: req.body.item})
+            })
         })
+
     })
 
-    app.delete('/todo/:item', (req, res) => {
-        // delete the requested item from mongodb
+    router.delete('/:item', (req, res) => {
+        if(!req.cookies.userId){
+            res.redirect('/')
+            return 
+        }
+
         const itemToDelete = req.params.item.replace(/-/g, " ")
 
-        Todo.find({ item: itemToDelete }).remove((err, data) => { // check what is data
+        User.find({
+            userId: req.cookies.userId
+        }, (err, data) => {
             if (err)  throw err
-            res.json({item: itemToDelete})
+            const user = data[0]
+            let todos = user.todos
+            todos = todos.filter(todo => todo.item!=itemToDelete)
+            user.todos = todos
+            user.save((err, data) => {
+                if (err)  throw err
+                res.json({item: itemToDelete})
+            })
         })
     })
+    
 
 }

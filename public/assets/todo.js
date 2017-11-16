@@ -8,7 +8,7 @@ $(document).ready(function(){
 
       $.ajax({
         type: 'POST',
-        url: '/todo',
+        url: `/user/${extractUserId(document.cookie)}/todos`,
         data: todo,
         success: function(todo){ 
           $("#todo-table ul").append(`<li>${todo.item}</li>`)
@@ -25,7 +25,7 @@ $(document).ready(function(){
       
       $.ajax({
         type: 'DELETE',
-        url: '/todo/' + item,     // url like - '/todo/get-some-milk' 
+        url: `/user/${extractUserId(document.cookie)}/todos/` + item,     // url like - '/todo/get-some-milk' 
         success: function(todo){
           let todos = []
           $("#todo-table ul li").each(function(){
@@ -40,4 +40,17 @@ $(document).ready(function(){
 
   })
 
+  // logout user
+  /*$('.logout').click(function(){
+      $.ajax({
+        type: 'POST',
+        url: '/logout',
+      })  
+  })*/
+
 })
+
+
+function extractUserId(cookie){
+  return  /.+?=(.+)/g.exec(cookie)[1]
+}
