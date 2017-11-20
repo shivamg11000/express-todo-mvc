@@ -1,6 +1,6 @@
 
 const User = require('../models/User')
-
+const bcrypt = require('bcrypt')
 
 module.exports = function(app){
 
@@ -19,17 +19,20 @@ module.exports = function(app){
         res.render('login')
         }
     })
+
     app.post('/login', (req, res) => {
         
-        User.find(req.body, (err ,data) => {
+        User.findOne({
+            userId: req.body.userId
+        }, async (err ,user) => {
             if (err)  throw err
-            if (data.length==0){
+            if (!user || !await cmpHash(req.body.password, user.password) ){
                 res.send('<h3>wrond ID or password</h3><h3>Sign Up for New users</h3>')
                 return
             }
 
-            res.cookie('userId', data[0].userId, {maxAge: 3600000})
-            res.redirect(`/user/${data[0].userId}/todos`)
+            res.cookie('userId', user.userId, {maxAge: 3600000})
+            res.redirect(`/user/${user.userId}/todos`)
         })
     })
 
@@ -40,7 +43,9 @@ module.exports = function(app){
             res.render('signup')
         }
     })
-    app.post('/signup', (req, res) => {
+
+    app.post('/signup', hashPassword, (req, res) => {
+         
         User.find({
             userId: req.body.userId
         }, (err, data) => {
@@ -50,7 +55,7 @@ module.exports = function(app){
             } else {
                 new User({
                     userId: req.body.userId,
-                    password: req.body.password
+                    password: req.body.password   //
                 }).save((err, data) => {
                     if (err)  throw err
                     res.cookie('userId', data.userId, {maxAge: 3600000})
@@ -63,8 +68,25 @@ module.exports = function(app){
     })
 
     app.get('/logout', (req, res) => {
-        console.log('performed logout')
         res.clearCookie('userId')
         res.redirect('/login')
+    })
+}
+
+// hashing password middleware
+function hashPassword(req, res, next) {
+    bcrypt.hash(req.body.password , 1, (err, hash) => {
+        if (err)  throw err
+        req.body.password = hash
+        next()
+    })
+}
+// compare password to a hash
+function cmpHash(password, hash) {
+    return new Promise((resolve, reject) => {
+        bcrypt.compare(password, hash, (err, res) => {
+            if (err)  throw err
+            resolve(res)
+        })
     })
 }
