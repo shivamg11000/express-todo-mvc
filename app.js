@@ -3,19 +3,10 @@ const app = express()
 const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
+const morgan = require('morgan')
 
-const todoController = require('./controllers/todoController')
-const userController = require('./controllers/userController')
-
-
-app.set('view engine', 'ejs')
-
-
-// middlewares
-app.use(express.static('public'))
-app.use(cookieParser())
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+const todoRouter = require('./routes/todoRoutes')
+const userRouter = require('./routes/userRoutes')
 
 
 // connect to database
@@ -26,9 +17,26 @@ mongoose.connection
 mongoose.Promise = global.Promise
 
 
-// fire controllers
-userController(app)    // handles user
-todoController(app)    // handles user todos
+
+app.set('view engine', 'ejs')
+
+
+// middlewares
+app.use(express.static('public'))
+app.use(cookieParser())
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+app.use(morgan('dev'))
+app.use(function (req, res, next){                // authenticates the user
+    req.isAuth = req.cookies.userId ? true : false
+    next()    
+})
+
+
+
+// routes
+app.use( userRouter)                      // handles users
+app.use('/user/:userId/todos', todoRouter)    // handles user todos
 
 // all other routes
 app.get('/*', (req, res) => {
