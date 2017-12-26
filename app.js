@@ -27,7 +27,7 @@ app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(morgan('dev'))
-app.use(function (req, res, next){                // authenticates the user
+app.use(function (req, res, next){                // adds isAuth to the req
     req.isAuth = req.cookies.userId ? true : false
     next()    
 })

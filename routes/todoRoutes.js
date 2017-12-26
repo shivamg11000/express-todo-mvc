@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const todoRouter = require('express').Router()
 const User = require('../models/User')
 
-todoRouter.use(checkAuthorization)
+todoRouter.use(checkAuthorization)  // protect todos from unauthorize access
 
 todoRouter.get('/', (req, res) => {
 

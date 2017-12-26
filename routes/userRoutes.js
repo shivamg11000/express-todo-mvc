@@ -46,7 +46,7 @@ userRouter.post('/signup', hashPassword, (req, res) => {
         userId: req.body.userId
     }, (err, user) => {
         if (err)  throw err
-        if(!user){
+        if(user){
             res.send('User Id already exist')
         } else {
             new User({
@@ -54,8 +54,8 @@ userRouter.post('/signup', hashPassword, (req, res) => {
                 password: req.body.password   //
             }).save((err, savedUser) => {
                 if (err)  throw err
-                res.cookie('userId', data.userId, {maxAge: 3600000})
-                res.redirect(`/user/${data.userId}/todos`)        
+                res.cookie('userId', savedUser.userId, {maxAge: 3600000})
+                res.redirect(`/user/${savedUser.userId}/todos`)        
             })
         }
 
